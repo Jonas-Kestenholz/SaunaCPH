@@ -1,6 +1,13 @@
 ```
 └── 📁shop-app
     └── 📁.expo
+        └── 📁web
+            └── 📁cache
+                └── 📁production
+                    └── 📁images
+                        └── 📁favicon
+                            └── 📁favicon-24272cdaeff82cc5facdaccd982a6f05b60c4504704bbf94c19a6388659880bb-contain-transparent
+                                ├── favicon-48.png
         ├── devices.json
         ├── README.md
         ├── settings.json
@@ -8,35 +15,46 @@
         └── 📁product
             ├── _layout.tsx
             ├── [id].tsx
-        └── 📁screens
         ├── _layout.tsx
         ├── cart.tsx
         ├── checkout.tsx
         ├── index.tsx
         ├── products.tsx
+        ├── Untitled-1.md
     └── 📁assets
         ├── adaptive-icon.png
         ├── favicon.png
         ├── icon.png
         ├── splash-icon.png
     └── 📁docs
-        ├── Analysis.md
-        ├── Api-integration.md
-        ├── Architecture.md
-        ├── Arkitekturdiagram.md
-        ├── Decisions.md
-        ├── Deployment.md
-        ├── Domain.md
-        ├── Requirements.md
-        ├── Risks.md
-        ├── Setup.md
-        ├── Testing.md
-        ├── User-flows.md
+        └── 📁V1
+            ├── Analysis.md
+            ├── Api-integration.md
+            ├── Architecture.md
+            ├── Arkitekturdiagram.md
+            ├── Decisions.md
+            ├── Deployment.md
+            ├── Domain.md
+            ├── Requirements.md
+            ├── Risks.md
+            ├── Setup.md
+            ├── Testing.md
+        └── 📁V2
+            ├── Analysis.md
+            ├── Api-integration.md
+            ├── Architecture.md
+            ├── Decisions.md
+            ├── Domain.md
+            ├── Home-flow.md
+            ├── Meeting.md
+        └── 📁V3
+            ├── Meeting.md
     └── 📁src
         └── 📁components
             └── 📁cart
                 ├── CartLineItem.tsx
             └── 📁common
+                ├── BottomBar.tsx
                 ├── ErrorState.tsx
                 ├── LoadingState.tsx
                 ├── Screen.tsx
@@ -50,6 +68,8 @@
                 ├── login.tsx
             └── 📁cart
                 ├── hooks.ts
+                ├── mapper.ts
+                ├── storage.ts
                 ├── store.ts
                 ├── types.ts
             └── 📁checkout
@@ -77,7 +97,7 @@
     ├── .env
     ├── .gitignore
     ├── app.json
-    ├── docs.zip
+    ├── eas.json
     ├── index.ts
     ├── package-lock.json
     ├── package.json

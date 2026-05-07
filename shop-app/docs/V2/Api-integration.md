@@ -32,3 +32,23 @@ monthly_drop_overlay:
 
 - Kræver mapping i frontend
 - Begrænset struktur sammenlignet med dedikeret CMS
+
+## Product variants (udvidelse)
+
+Produktvarianter henter nu selectedOptions fra Shopify:
+
+- name
+- value
+
+Eksempel:
+- Color: Black
+- Size: M
+
+Dette muliggør:
+
+- korrekt variantvalg
+- separation af color og size i UI
+
+Mapping håndteres i frontend:
+- color → ProductVariant.color
+- size → ProductVariant.size

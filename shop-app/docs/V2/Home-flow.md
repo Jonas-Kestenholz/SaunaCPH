@@ -76,3 +76,6 @@ Fordele:
 Ulemper:
 - Mere kompleks home screen
 - Flere concerns i én screen
+
+- Sticky CTA (pil op) vises når produktlisten er aktiv
+- Bottom bar vises kun når produktlisten fylder skærmen

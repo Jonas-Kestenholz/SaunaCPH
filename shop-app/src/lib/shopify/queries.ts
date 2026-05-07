@@ -28,11 +28,29 @@ export const GET_PRODUCT_QUERY = /* GraphQL */ `
       title
       description
       availableForSale
+
       images(first: 10) {
         edges {
           node {
             url
             altText
+          }
+        }
+      }
+      relatedColors: metafield(namespace: "custom", key: "related_colors") {
+        references(first: 10) {
+          edges {
+            node {
+              ... on Product {
+                id
+                title
+                handle
+                featuredImage {
+                  url
+                  altText
+                }
+              }
+            }
           }
         }
       }
@@ -45,6 +63,10 @@ export const GET_PRODUCT_QUERY = /* GraphQL */ `
             price {
               amount
               currencyCode
+            }
+            selectedOptions {
+              name
+              value
             }
           }
         }
@@ -152,6 +174,41 @@ export const GET_CART_QUERY = /* GraphQL */ `
         totalAmount {
           amount
           currencyCode
+        }
+      }
+    }
+  }
+`;
+export const GET_CUSTOMER_PROFILE_QUERY = /* GraphQL */ `
+  query GetCustomerProfile($customerAccessToken: String!) {
+    customer(customerAccessToken: $customerAccessToken) {
+      id
+      displayName
+      firstName
+      lastName
+      email
+      phone
+      defaultAddress {
+        address1
+        city
+        country
+      }
+      orders(first: 5, sortKey: PROCESSED_AT, reverse: true) {
+        edges {
+          node {
+            id
+            name
+            processedAt
+            fulfillmentStatus
+            financialStatus
+            fulfillments(first: 5) {
+              trackingInfo {
+                number
+                company
+                url
+              }
+            }
+          }
         }
       }
     }

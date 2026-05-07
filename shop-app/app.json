@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SAUNA",
-    "slug": "shop-app",
+    "slug": "sauna",
     "scheme": "sauna",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,7 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shopsauna.SAUNA",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -26,6 +30,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d3693287-b9f9-4c5d-8dc4-3694a118d8ab"
+      }
+    },
+    "owner": "saunacph-organization"
   }
 }

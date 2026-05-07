@@ -17,4 +17,7 @@ export const env = {
   shopifyStoreDomain: getRequiredEnv('EXPO_PUBLIC_SHOPIFY_STORE_DOMAIN'),
   shopifyApiVersion: getRequiredEnv('EXPO_PUBLIC_SHOPIFY_API_VERSION'),
   shopifyStorefrontToken: getOptionalEnv('EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN'),
+    shopifyCustomerAccessToken: getOptionalEnv(
+    "EXPO_PUBLIC_SHOPIFY_CUSTOMER_ACCESS_TOKEN"
+  ),
 };

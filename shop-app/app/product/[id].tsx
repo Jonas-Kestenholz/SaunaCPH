@@ -3,6 +3,7 @@ import {
   FlatList,
   Image,
   Modal,
+  Alert,
   Pressable,
   ScrollView,
   Text,
@@ -17,6 +18,10 @@ import { useProduct } from "@/src/features/products/hooks";
 import type { ProductVariant } from "@/src/features/products/types";
 import { useAddToCart } from "@/src/features/cart/hooks";
 import BottomBar from "@/src/components/common/BottomBar";
+import {
+  createRestockAlert,
+  useSaveRestockAlert,
+} from "@/src/features/notifications/hooks";
 
 const { width, height } = Dimensions.get("window");
 const IMAGE_HEIGHT = Math.round(height * 0.72);
@@ -60,6 +65,7 @@ function getVariantLabel(rawTitle: string): string {
 
 export default function ProductDetailScreen() {
   const addToCartMutation = useAddToCart();
+  const saveRestockAlert = useSaveRestockAlert();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const flatListRef = useRef<FlatList>(null);
@@ -145,7 +151,22 @@ export default function ProductDetailScreen() {
     "Pris ikke tilgængelig";
 
   const previewImages = data?.images?.slice(0, 3) ?? [];
-  const colorThumbnails = data?.images?.slice(0, 2) ?? [];
+  const colorOptions = data
+    ? [
+        {
+          id: data.id,
+          title: data.title,
+          imageUrl: data.images[0]?.url,
+          isCurrent: true,
+        },
+        ...data.relatedColors.map((product) => ({
+          id: product.id,
+          title: product.title,
+          imageUrl: product.imageUrl,
+          isCurrent: false,
+        })),
+      ]
+    : [];
 
   function handleSelectVariant(variantId: string) {
     setSelectedVariantId(variantId);
@@ -173,10 +194,32 @@ export default function ProductDetailScreen() {
     }
 
     if (productAction === "notify_restock") {
-      console.log("Notify restock for:", {
-        productId: data.id,
-        variantId: selectedVariant?.id ?? null,
-      });
+      saveRestockAlert.mutate(
+        createRestockAlert({
+          productId: data.id,
+          variantId: selectedVariant?.id,
+          productTitle: data.title,
+          variantTitle: selectedVariant
+            ? getVariantLabel(selectedVariant.title)
+            : undefined,
+          imageUrl: data.images[0]?.url,
+        }),
+        {
+          onSuccess: () => {
+            Alert.alert(
+              "Restock alert saved",
+              "You’ll be notified when this item is back in stock.",
+            );
+          },
+          onError: (error) => {
+            Alert.alert(
+              "Could not save alert",
+              error instanceof Error ? error.message : "Something went wrong.",
+            );
+          },
+        },
+      );
+
       return;
     }
 
@@ -186,10 +229,24 @@ export default function ProductDetailScreen() {
     }
 
     if (!selectedVariant.available) {
-      console.log("Notify restock for sold out variant:", {
-        productId: data.id,
-        variantId: selectedVariant.id,
-      });
+      saveRestockAlert.mutate(
+        createRestockAlert({
+          productId: data.id,
+          variantId: selectedVariant.id,
+          productTitle: data.title,
+          variantTitle: getVariantLabel(selectedVariant.title),
+          imageUrl: data.images[0]?.url,
+        }),
+        {
+          onSuccess: () => {
+            Alert.alert(
+              "Restock alert saved",
+              "You’ll be notified when this item is back in stock.",
+            );
+          },
+        },
+      );
+
       return;
     }
 
@@ -280,11 +337,11 @@ export default function ProductDetailScreen() {
   }
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f1f1" }}>
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 28 }}
+          contentContainerStyle={{ paddingBottom: 48 }}
           showsVerticalScrollIndicator={false}
         >
           <View style={{ backgroundColor: "#f1f1f1" }}>
@@ -398,17 +455,20 @@ export default function ProductDetailScreen() {
               </Text>
 
               <View style={{ flexDirection: "row", gap: 10 }}>
-                {colorThumbnails.map((image, index) => {
-                  const isSelected = index === selectedImageIndex;
+                {colorOptions.map((option, index) => {
+                  const isSelected = option.isCurrent;
 
                   return (
                     <Pressable
-                      key={`${image.url}-${index}`}
+                      key={`${option.id}-${option.title}-${index}`}
                       onPress={() => {
-                        setSelectedImageIndex(index);
-                        flatListRef.current?.scrollToIndex({
-                          index,
-                          animated: true,
+                        if (option.isCurrent) {
+                          return;
+                        }
+
+                        router.replace({
+                          pathname: "/product/[id]",
+                          params: { id: option.id },
                         });
                       }}
                       style={{
@@ -420,11 +480,13 @@ export default function ProductDetailScreen() {
                         backgroundColor: "#fff",
                       }}
                     >
-                      <Image
-                        source={{ uri: image.url }}
-                        style={{ width: "100%", height: "100%" }}
-                        resizeMode="cover"
-                      />
+                      {option.imageUrl ? (
+                        <Image
+                          source={{ uri: option.imageUrl }}
+                          style={{ width: "100%", height: "100%" }}
+                          resizeMode="cover"
+                        />
+                      ) : null}
                     </Pressable>
                   );
                 })}
@@ -500,7 +562,9 @@ export default function ProductDetailScreen() {
 
               <Pressable
                 onPress={handlePrimaryAction}
-                disabled={addToCartMutation.isPending}
+                disabled={
+                  addToCartMutation.isPending || saveRestockAlert.isPending
+                }
                 style={{
                   minWidth: 154,
                   paddingHorizontal: 18,
@@ -521,13 +585,19 @@ export default function ProductDetailScreen() {
                     fontSize: 13,
                   }}
                 >
-                  {addToCartMutation.isPending ? "ADDING..." : buttonLabel}
+                  {addToCartMutation.isPending
+                    ? "ADDING..."
+                    : saveRestockAlert.isPending
+                      ? "SAVING..."
+                      : buttonLabel}
                 </Text>
               </Pressable>
             </View>
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      <BottomBar />
 
       {isSizeSheetOpen ? (
         <View
@@ -538,6 +608,7 @@ export default function ProductDetailScreen() {
             bottom: 0,
             left: 0,
             justifyContent: "flex-end",
+            zIndex: 1000,
           }}
           pointerEvents="box-none"
         >
@@ -645,6 +716,7 @@ export default function ProductDetailScreen() {
             bottom: 0,
             left: 0,
             justifyContent: "flex-end",
+            zIndex: 1000,
           }}
           pointerEvents="box-none"
         >
@@ -748,9 +820,8 @@ export default function ProductDetailScreen() {
               </Text>
             </Pressable>
           </Animated.View>
-          <BottomBar />
         </View>
       ) : null}
-    </>
+    </View>
   );
 }

@@ -43,3 +43,15 @@ Projektet er udvidet fra en simpel produktkatalog-app til en content-drevet comm
 - Øget kompleksitet i frontend
 - Introduktion af tidsbaseret UI-logik
 - Større ansvar i homescreen
+
+## Nye UI/UX forbedringer
+
+- Vertikal swipe navigation fra hero til produktliste
+- Sticky CTA (scroll-to-top) på produktlisten
+- Conditional bottom bar (vises kun når produktlisten er aktiv)
+- Produktside opdateret til full-screen billeder
+
+## Variant system (udvidelse)
+
+- Produktvarianter udvidet med color og size via Shopify selectedOptions
+- Grundlag for korrekt variantvalg (ikke længere baseret på billeder)

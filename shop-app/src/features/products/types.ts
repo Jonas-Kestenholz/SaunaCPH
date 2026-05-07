@@ -37,6 +37,9 @@ export type ProductVariant = {
   currencyCode: string;
   available: boolean;
   quantityAvailable?: number;
+
+  color?: string;
+  size?: string;
 };
 
 export type ProductDetail = {
@@ -49,6 +52,7 @@ export type ProductDetail = {
     alt?: string;
   }>;
   variants: ProductVariant[];
+  relatedColors: RelatedColorProduct[];
 };
 
 export type GetProductQueryResponse = {
@@ -57,6 +61,7 @@ export type GetProductQueryResponse = {
     title: string;
     description: string;
     availableForSale: boolean;
+
     images: {
       edges: Array<{
         node: {
@@ -65,6 +70,23 @@ export type GetProductQueryResponse = {
         };
       }>;
     };
+
+    relatedColors?: {
+      references?: {
+        edges: Array<{
+          node: {
+            id: string;
+            title: string;
+            handle: string;
+            featuredImage?: {
+              url: string;
+              altText: string | null;
+            } | null;
+          };
+        }>;
+      } | null;
+    } | null;
+
     variants: {
       edges: Array<{
         node: {
@@ -76,6 +98,10 @@ export type GetProductQueryResponse = {
             amount: string;
             currencyCode: string;
           };
+          selectedOptions?: Array<{
+            name: string;
+            value: string;
+          }>;
         };
       }>;
     };
@@ -87,4 +113,11 @@ export type GetProductByHandleQueryResponse = {
     handle: string;
     title: string;
   } | null;
+};
+export type RelatedColorProduct = {
+  id: string;
+  title: string;
+  handle: string;
+  imageUrl?: string;
+  imageAlt?: string;
 };

@@ -1,8 +1,17 @@
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import { CartIcon } from "../icons/CartIcon";
+import { NotificationIcon } from "../icons/NotificationIcon";
+import { useRestockAlerts } from "../../features/notifications/hooks";
+import { ProfileIcon } from "../icons/ProfileIcon";
+import { useCustomerProfile } from "../../features/profile/hooks";
+import { SaunaLogoIcon } from "../icons/SaunaLogoIcon";
 
 export default function BottomBar() {
   const router = useRouter();
+  const { data: alerts = [] } = useRestockAlerts();
+  const { data } = useCustomerProfile();
+  const isLoggedIn = !!data;
 
   return (
     <View
@@ -23,24 +32,24 @@ export default function BottomBar() {
         justifyContent: "space-between",
       }}
     >
-      <Pressable onPress={() => console.log("Support kommer senere")}>
-        <Text style={{ fontSize: 24 }}>□</Text>
+      <Pressable onPress={() => router.push("/support")}>
+        <Text style={{ fontSize: 24 }}>?</Text>
       </Pressable>
 
-      <Pressable onPress={() => console.log("Notifications kommer senere")}>
-        <Text style={{ fontSize: 24 }}>♢</Text>
+      <Pressable onPress={() => router.push("/notifications")}>
+        <NotificationIcon filled={alerts.length > 0} />
       </Pressable>
 
       <Pressable onPress={() => router.push("/")}>
-        <Text style={{ fontSize: 26, fontWeight: "900" }}>SAUNA</Text>
+      <SaunaLogoIcon />
       </Pressable>
 
       <Pressable onPress={() => router.push("/cart")}>
-        <Text style={{ fontSize: 24 }}>▢</Text>
+        <CartIcon />
       </Pressable>
 
-      <Pressable onPress={() => console.log("Account kommer senere")}>
-        <Text style={{ fontSize: 24 }}>○</Text>
+      <Pressable onPress={() => router.push("/profile")}>
+          <ProfileIcon filled={isLoggedIn} />
       </Pressable>
     </View>
   );

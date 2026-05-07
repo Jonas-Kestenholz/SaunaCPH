@@ -45,3 +45,22 @@ Fordele:
 Ulemper:
 - Frontend bliver mere kompleks
 - Begrænset CMS fleksibilitet
+
+## UI layer (udvidelse)
+
+Homescreen og produktside er udvidet med:
+
+- Gesture handling (swipe navigation)
+- Sticky UI elements (CTA + bottom bar)
+- Conditional rendering baseret på scroll position
+
+---
+
+## Variant data flow
+
+Shopify → Variants → selectedOptions → Mapper → UI
+
+Dette gør det muligt at:
+
+- vise color og size separat
+- styre variantvalg korrekt

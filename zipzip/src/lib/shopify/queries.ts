@@ -37,20 +37,23 @@ export const GET_PRODUCT_QUERY = /* GraphQL */ `
         }
       }
       variants(first: 20) {
-        edges {
-          node {
-            id
-            title
-            availableForSale
-            price {
-              amount
-              currencyCode
-            }
-          }
-        }
+  edges {
+    node {
+      id
+      title
+      availableForSale
+      quantityAvailable
+      price {
+        amount
+        currencyCode
+      }
+      selectedOptions {
+        name
+        value
       }
     }
   }
+}
 `;
 export const GET_HOME_SLIDES_QUERY = /* GraphQL */ `
   query GetHomeSlides($type: String!, $first: Int!) {

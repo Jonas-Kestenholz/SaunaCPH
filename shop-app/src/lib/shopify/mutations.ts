@@ -208,3 +208,16 @@ export const CART_LINES_REMOVE_MUTATION = /* GraphQL */ `
     }
   }
 `;
+export const CUSTOMER_ACCESS_TOKEN_CREATE_MUTATION = /* GraphQL */ `
+  mutation CustomerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+    customerAccessTokenCreate(input: $input) {
+      customerAccessToken {
+        accessToken
+        expiresAt
+      }
+      customerUserErrors {
+        message
+      }
+    }
+  }
+`;

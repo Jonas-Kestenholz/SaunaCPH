@@ -29,6 +29,17 @@
 │ productHandle?       │
 └──────────────────────┘
 
+┌──────────────────────┐
+│   ProductVariant     │
+├──────────────────────┤
+│ id                   │
+│ title                │
+│ price                │
+│ available            │
+│ color?               │
+│ size?                │
+└──────────────────────┘
+
 ---
 
 ## Relation til eksisterende domæner
@@ -43,3 +54,8 @@
 - Domænerne er content-drevne
 - Data kommer fra Shopify Metaobjects
 - Mapping sker i frontend
+
+## Bemærkninger (tilføj)
+
+- color og size udledes fra Shopify selectedOptions
+- variant title bruges ikke længere som primær datakilde
