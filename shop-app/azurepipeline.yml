@@ -1,0 +1,136 @@
+trigger:
+  tags:
+    include:
+      - "v*"
+
+pr: none
+
+pool:
+  vmImage: "macos-latest"
+
+variables:
+  - name: NODE_VERSION
+    value: "22.x"
+  - name: CI
+    value: "1"
+  - group: expo-secrets
+  - group: apple-secrets
+
+stages:
+  - stage: Build
+    displayName: "Build iOS with EAS"
+    jobs:
+      - job: eas_build
+        displayName: "EAS iOS production build"
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "$(NODE_VERSION)"
+            displayName: "Use Node.js $(NODE_VERSION)"
+
+          - script: |
+              npm ci
+              npm install -g eas-cli
+              eas --version
+            displayName: "Install dependencies and EAS CLI"
+
+          - script: |
+              eas whoami
+            displayName: "Check Expo authentication"
+            env:
+              EXPO_TOKEN: $(EXPO_TOKEN)
+              CI: "1"
+
+          - script: |
+              set -euo pipefail
+
+              echo "Starting EAS iOS production build..."
+
+              BUILD_JSON=$(eas build \
+                --platform ios \
+                --profile production \
+                --non-interactive \
+                --json)
+
+              echo "$BUILD_JSON"
+
+              BUILD_ID=$(echo "$BUILD_JSON" | jq -r 'if type=="array" then .[0].id else .id end')
+
+              if [ -z "$BUILD_ID" ] || [ "$BUILD_ID" = "null" ]; then
+                echo "Could not parse EAS build id"
+                exit 1
+              fi
+
+              echo "Build id: $BUILD_ID"
+              echo "##vso[task.setvariable variable=EAS_BUILD_ID;isOutput=true]$BUILD_ID"
+            name: setBuildId
+            displayName: "Run EAS build and capture build id"
+            env:
+              EXPO_TOKEN: $(EXPO_TOKEN)
+              CI: "1"
+
+  - stage: SubmitTestFlight
+    displayName: "Submit to TestFlight"
+    dependsOn: Build
+    variables:
+      EAS_BUILD_ID: $[ stageDependencies.Build.eas_build.outputs['setBuildId.EAS_BUILD_ID'] ]
+    jobs:
+      - deployment: submit_tf
+        displayName: "Submit iOS build to TestFlight"
+        environment: testflight
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  clean: true
+                  fetchDepth: 0
+
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: "$(NODE_VERSION)"
+                  displayName: "Use Node.js $(NODE_VERSION)"
+
+                - script: |
+                    npm ci
+                    npm install -g eas-cli
+                    eas --version
+                  displayName: "Install dependencies and EAS CLI"
+
+                - script: |
+                    eas whoami
+                  displayName: "Check Expo authentication"
+                  env:
+                    EXPO_TOKEN: $(EXPO_TOKEN)
+                    CI: "1"
+
+                - script: |
+                    set -euo pipefail
+
+                    echo "Creating App Store Connect API key file..."
+                    printf "%s" "$ASC_PRIVATE_KEY" > AuthKey.p8
+                    chmod 600 AuthKey.p8
+                  displayName: "Create App Store Connect API key file"
+                  env:
+                    ASC_PRIVATE_KEY: $(ASC_PRIVATE_KEY)
+
+                - script: |
+                    set -euo pipefail
+
+                    echo "Submitting EAS build id: $(EAS_BUILD_ID)"
+
+                    eas submit \
+                      --platform ios \
+                      --profile testflight \
+                      --non-interactive \
+                      --id "$(EAS_BUILD_ID)"
+                  displayName: "Submit to TestFlight with EAS Submit"
+                  env:
+                    EXPO_TOKEN: $(EXPO_TOKEN)
+                    ASC_KEY_ID: $(ASC_KEY_ID)
+                    ASC_ISSUER_ID: $(ASC_ISSUER_ID)
+                    CI: "1"
