@@ -1,95 +1,304 @@
-## SAUNA – React Native Shopify App
+# SAUNA Mobile App
 
-## Projektbeskrivelse
+Mobile application developed for SAUNA as part of a Datamatiker final project.
 
-Dette projekt er en mobilapplikation udviklet i React Native med Expo, som integrerer med Shopify for at give brugere mulighed for at browse og købe produkter direkte via en app.
-
-Appen fungerer primært som frontend, mens Shopify håndterer backend-logik såsom produktdata, cart og brugerlogin.
+The app is built with React Native and Expo and integrates with Shopify to provide a mobile shopping experience, dynamic front page content, customer login, cart, checkout, restock notifications, support functionality and order-related profile features.
 
 ---
 
-## Formål
+## Project Overview
 
-* Skabe en direkte kanal til kunder
-* Muliggøre køb via mobil
-* Understøtte push-notifikationer
+SAUNA is a clothing brand with an existing Shopify webshop. The purpose of this project was to build a mobile application that could support the existing webshop experience while also creating a stronger direct communication channel between SAUNA and its customers.
+
+The application focuses on:
+
+* Mobile-first shopping experience
+* Shopify product and cart integration
+* Dynamic front page content controlled from Shopify
+* Customer login through Shopify Customer Accounts
+* Restock notification foundation using Azure Functions
+* Support form handling
+* Track & trace flow prepared for DAO/GLS integration
+* TestFlight-ready iOS build workflow through Expo EAS and Azure DevOps
 
 ---
 
-## Teknologi
+## Tech Stack
 
-* React Native (Expo)
-* Shopify (Storefront API)
-* GraphQL
-* Expo Notifications
-* (Planlagt) Azure DevOps CI/CD
+### Mobile App
+
+* React Native
+* Expo
+* Expo Router
+* TypeScript
+* TanStack Query
+* AsyncStorage
+* Shopify Checkout Sheet Kit
+
+### Backend / Cloud
+
+* Azure Functions
+* Azure Table Storage
+* Shopify Webhooks
+* Expo Push Notification Service
+
+### Commerce Platform
+
+* Shopify Storefront API
+* Shopify Customer Accounts
+* Shopify Metaobjects
+
+### Deployment and Testing
+
+* Expo EAS Build
+* TestFlight
+* Azure DevOps Pipeline
 
 ---
 
-## Projektstruktur
+## Main Features
 
-```id="zptzkq"
-/docs
-  architecture.md
-  decisions.md
-  setup.md
-  api-integration.md
-  deployment.md
+### Dynamic Home Screen
+
+The home screen is controlled through Shopify Metaobjects. SAUNA can update images, titles, CTA labels, product references and active states directly in Shopify without requiring a new app release.
+
+The app supports two types of front page content:
+
+* Home slides
+* Monthly drop overlay with countdown
+
+If the drop overlay is active and the current date is within the configured activation period, the app displays the drop overlay. Otherwise, it displays the normal home slides.
+
+---
+
+### Product Catalogue
+
+Products are fetched from Shopify using the Storefront API. The app displays products in a mobile-friendly product grid and allows the user to open individual product pages.
+
+Product pages include:
+
+* Product images
+* Product title
+* Price
+* Description
+* Variant selection
+* Size selection
+* Add to cart functionality
+
+---
+
+### Cart and Checkout
+
+The app uses Shopify Cart through the Storefront API.
+
+A Shopify cart ID is stored locally with AsyncStorage, so the app can reuse the same cart when the user opens the app again. If the saved cart no longer exists in Shopify, the app automatically creates a new cart.
+
+Checkout is handled through Shopify Checkout Sheet Kit. This means Shopify handles payment, delivery information and order confirmation, while the app controls the shopping experience before checkout.
+
+---
+
+### Customer Login and Profile
+
+Login is implemented through Shopify Customer Accounts using OAuth Authorization Code Flow with PKCE.
+
+The app does not handle customer passwords directly. Shopify handles the secure login flow, while the app stores the returned tokens and uses them to fetch customer profile data and previous orders.
+
+The profile area includes:
+
+* Customer information
+* Previous orders
+* Shipping status section
+* Order-related navigation
+
+---
+
+### Notify Me / Restock Alerts
+
+The notify me feature allows users to register interest in out-of-stock products or variants.
+
+When the user signs up for a restock alert, the app sends product and push token data to an Azure Function. The registration is stored in Azure Table Storage.
+
+The flow is designed to work together with Shopify webhooks:
+
+1. User taps Notify me in the app
+2. App sends product, variant and Expo push token data to Azure
+3. Azure Function stores the registration in Table Storage
+4. Shopify webhook is triggered by inventory changes
+5. Azure Function can look up relevant registrations
+6. Expo Push Notification Service can send restock notifications
+
+Status: the registration flow and Azure setup are implemented. Full end-to-end production testing of the webhook and push notification flow is still part of the final test phase.
+
+---
+
+### Support
+
+The app includes a support page with FAQ, support information and a contact form.
+
+The support form stores the user's email and message through Azure Functions, so SAUNA can respond from their support email.
+
+---
+
+### Track & Trace
+
+The profile area includes a track & trace flow for showing order delivery status.
+
+The flow is prepared for DAO/GLS integration and has been tested with mock data. Final live integration depends on access to the required DAO/GLS API keys.
+
+---
+
+## Project Structure
+
+```text
+app/
+├── product/
+│   ├── _layout.tsx
+│   └── [id].tsx
+├── tracking/
+│   └── [orderId].tsx
+├── _layout.tsx
+├── app-settings.tsx
+├── cart.tsx
+├── checkout.tsx
+├── index.tsx
+├── login.tsx
+├── notifications.tsx
+├── orders.tsx
+├── products.tsx
+├── profile-details.tsx
+├── profile.tsx
+└── support.tsx
+
+src/
+├── components/
+│   ├── cart/
+│   ├── common/
+│   ├── icons/
+│   ├── notifications/
+│   ├── products/
+│   ├── profile/
+│   └── support/
+├── features/
+│   ├── auth/
+│   ├── cart/
+│   ├── home/
+│   ├── notifications/
+│   ├── products/
+│   ├── profile/
+│   └── tracking/
+├── lib/
+│   └── shopify/
+└── providers/
 ```
 
+The project is structured around feature folders. Each feature contains its own hooks, types, mappers, storage or service logic where relevant. This makes the codebase easier to maintain and extend.
+
 ---
 
-## Kom i gang
+## Environment Variables
+
+The app requires environment variables for Shopify, Customer Accounts and API communication.
+
+Example:
+
+```env
+EXPO_PUBLIC_SHOPIFY_API_VERSION=
+EXPO_PUBLIC_SHOPIFY_STORE_DOMAIN=
+EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN=
+EXPO_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID=
+EXPO_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_REDIRECT_URI=
+EXPO_PUBLIC_CUSTOM_API_BASE_URL=
+EXPO_PUBLIC_CUSTOM_API_KEY=
+```
+
+Do not commit real tokens or secrets to GitHub.
+
+---
+
+## Getting Started
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Start the development server:
+
+```bash
 npx expo start
 ```
 
-Se `/docs/setup.md` for detaljer.
+Run Expo doctor:
+
+```bash
+npx expo-doctor@latest
+```
 
 ---
 
-## Dokumentation
+## iOS Build
 
-Projektet er dokumenteret løbende for at understøtte:
+The project is configured for EAS builds.
 
-* Overdragelse til andre udviklere
-* Transparens i tekniske beslutninger
-* Grundlag for rapport
+Example build command:
 
-Se:
+```bash
+eas build --platform ios --profile production
+```
 
-* Architecture → `/docs/architecture.md`
-* Beslutninger → `/docs/decisions.md`
-* Setup → `/docs/setup.md`
-* API → `/docs/api-integration.md`
-* Deployment → `/docs/deployment.md`
+The project also contains an Azure DevOps pipeline for building the iOS app and submitting it to TestFlight.
 
 ---
 
-## DevOps strategi
+## Current Status
 
-Projektet startes i GitHub og migreres senere til Azure DevOps for:
+Implemented:
 
-* CI/CD pipelines
-* Struktur og governance
-* Fremtidig drift
+* Shopify product listing
+* Product detail pages
+* Variant selection
+* Cart
+* Shopify checkout
+* Shopify Customer Account login
+* Profile and previous orders
+* Dynamic home slides through Shopify Metaobjects
+* Monthly drop overlay with countdown
+* Notify me registration flow
+* Azure Functions setup
+* Azure Table Storage setup
+* Shopify webhook setup
+* Support form
+* Track & trace UI with mock data
+* TestFlight build setup
+* Azure DevOps pipeline setup
+
+Partially completed / pending final testing:
+
+* End-to-end notify me webhook and push notification flow
+* Live DAO/GLS track & trace integration
+* Final production release to App Store
 
 ---
 
-## Overdragelse
+## Future Development
 
-Projektet er designet med fokus på:
+Possible future features include:
 
-* Lav kompleksitet
-* Klar dokumentation
-* Brug af eksisterende platforme (Shopify)
-
-Dette gør det muligt for andre udviklere hurtigt at overtage og videreudvikle løsningen.
+* Community hub
+* Event notifications
+* Collection drop notifications
+* Local wishlist
+* Ønskeskyen integration
+* iOS home screen widget
+* More advanced analytics
+* Expanded notification preferences
+* Android release
 
 ---
 
-## Status
+## Notes
 
-Projektet er under udvikling og følger en iterativ proces med løbende feedback og forbedringer.
+This project was developed as a final Datamatiker project in collaboration with SAUNA.
+
+The application is intended as a technical foundation for a future SAUNA mobile platform. Some integrations are prepared but depend on final production credentials and business release planning.
